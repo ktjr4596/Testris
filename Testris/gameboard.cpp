@@ -73,11 +73,15 @@ gameboard::gameboard() {
 //	DrawScreen();
 //}
 gameboard::gameboard(gameboard&& rhs) noexcept {
-
-	id++;
+;
+	
 	nx = rhs.nx;
 	ny = rhs.ny;
-	memcpy(board, rhs.board, sizeof(short)*(BH + 2)*(BW + 2));
+	ax = rhs.ax;
+	ay = rhs.ay;
+	memcpy(board, rhs.board, sizeof(boardinfo)*((BH + 2)*(BW + 2)));
+
+	//printf("%d\n", id);
 	DrawScreen();
 }
 gameboard& gameboard::operator=(gameboard && rhs)noexcept {
@@ -88,7 +92,10 @@ gameboard& gameboard::operator=(gameboard && rhs)noexcept {
 	id = rhs.id;
 	nx = rhs.nx;
 	ny = rhs.ny;
-	memcpy(board, rhs.board, sizeof(short)*(BH + 2)*(BW + 2));
+	ax = rhs.ax;
+	ay = rhs.ay;
+	memcpy(board, rhs.board, sizeof(boardinfo)*(BH + 2)*(BW + 2));
+	printf("operator=");
 	return *this;
 }
 void gameboard::DrawScreen() {
@@ -107,11 +114,12 @@ void gameboard::DrawScreen() {
 
 void gameboard::Printbrick(bool show, short brick, short rot) {
 
+	std::unique_lock<std::mutex> l(printm);
 	for (int i = 0; i < 4; ++i) {
 		gtxy::gotoxy(BX + (shape[brick][rot][i].x + nx) * 2, BY + shape[brick][rot][i].y + ny);
 		puts(tile[show ? BRICK : EMPTY]);
 	}
-
+	l.unlock();
 }
 void gameboard::Printbricka(bool show, short brick, short rot) {
 
@@ -168,4 +176,21 @@ void gameboard::Printscore()
 	gtxy::gotoxy(BX + 10, BY + BH + 5);
 	gtxy::ClearConsoleToColors(gtxy::White, gtxy::Black);
 	printf("%d", score);
+}
+
+void gameboard::setxy(const short id) {
+	if (id == 0) {
+		nx = (BW) / 2;
+		ny = 3;
+		ax = (BW) / 2;
+		ay = 3;
+	}
+	else if (id > 0) {
+		//((id - 1)*(BW + 2) * 2) + BX + 10 * (id)+x * 2
+		//nx = BW + BX + 8+((BW+BX+2)*(id-1)/2);
+		nx = (BW + BX + 8) + (BW + BX + 2)*(id - 1) + (BW / 2);
+		ny = 3;
+		ax = (BW + BX + 8) + (BW + BX + 2)*(id - 1) + (BW / 2);
+		ay = 3;
+	}
 }

@@ -6,7 +6,7 @@
 #include <queue>
 #include <vector>
 #include <chrono>
-
+#include <mutex>
 #define UP 0x48
 #define LEFT 0x4b
 #define RIGHT 0x4d
@@ -17,6 +17,10 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 class controller;
 class gameboard;
+class MoveFunc;
+
+static std::mutex m[4];
+
 class inputclass {
 private:
 	int ch;
@@ -33,7 +37,7 @@ private:
 	short trot = 0;
 	short rot;
 	short playernum;
-	std::vector<gameboard> player;
+	//std::vector<gameboard> player;
 	bool timetrig = false;
 
 public:
@@ -43,11 +47,13 @@ public:
 	void moveDowna(const short);
 	void addboard();
 	bool ProcessKey(const int);
-	bool moveDown(const short);
-	bool moveDownAll();
-	void TestFull(const short);
-	short getAround(const short  x, const short  y, const short  b, const short  r);
+	static bool moveDown(const short,const short,const short);
+	
+	static void TestFull(const short,const short,const short);
+
+	static short getAround(const short,const short  x, const short  y, const short  b, const short  r);
 	friend class gameboard;
+	friend class MoveFunc;
 };
 
 
@@ -74,5 +80,10 @@ public:
 	Timer() :start(std::chrono::high_resolution_clock::now()) {};
 	void operator()(bool &);
 };
+class MoveFunc {
 
+public:
+	void operator()(gameboard&);
+	friend class controller;
+};
 #endif // !INPUT_H

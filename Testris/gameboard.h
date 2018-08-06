@@ -1,6 +1,6 @@
 #ifndef GAMEBOARD_H
 #define GAMEBOARD_H
-
+#include <mutex>
 
 #define BX 5
 #define BY 5
@@ -12,6 +12,7 @@ struct Point
 	short y;
 };
 extern Point shape[][4][4];
+static std::mutex printm;
 struct boardinfo
 {
 	short block;
@@ -29,6 +30,7 @@ private:
 	static int id;
 	int score;
 	int playerid;
+	short brick;
 public:
 	gameboard();
 	//explicit gameboard(int);
@@ -47,6 +49,20 @@ public:
 	void DrawNextBrick(bool, short);
 	void Printbricka(bool, short, short);
 	void Printscore();
+	void setxy(const short);
+	short getnx() const { return nx; };
+	short getax() const { return ax; };
+	short getny ()const {
+		return ny;
+	};
+	short getay () const {
+		return ay;
+	};
+	void setnx(short x) { nx = x; }
+	void setny(short y) { ny = y; }
+	void setax(short x) { ax = x; }
+	void setay(short y) { ay = y; }
+	void setbrick(short b) { brick = b; }
 	inline int getid() { return id; };
 	friend class controller;
 };

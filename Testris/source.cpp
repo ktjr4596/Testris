@@ -18,10 +18,7 @@ int main()
 	std::thread inputthread(ic, std::ref(commandq));
 	thread_guard g(inputthread);
 	controller ctrl;
-	ctrl.addboard();
-	ctrl.addboard();
-	ctrl.addboard();
-	ctrl.addboard();
+	
 
 	std::thread ctrlthread(std::move(ctrl), std::ref(commandq));
 	ctrlthread.detach();
