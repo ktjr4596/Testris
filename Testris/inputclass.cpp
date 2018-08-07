@@ -6,7 +6,6 @@
 #include <time.h>
 
 bool trig[4] = { false,false,false,false };
-bool ttrig[4]= { false,false,false,false };
 short cnt = 0;
 std::vector<gameboard> player;
 void inputclass::operator()(std::queue<int>& q) {
@@ -55,13 +54,12 @@ controller::controller(controller &&rhs) {
 void moveFunc(const short pnum,bool & timetrig) {
 	
 	short brick, nextbrick, rot;
-	nextbrick = rand() % 7; //ttrig[pnum] = false;
-
+	nextbrick = rand() % 7;
 	while (true) {
 
 		//printf("%d\n", pnum);
 		player[pnum].setxy(pnum);
-		ttrig[pnum] = false;
+		
 		brick = nextbrick;
 		player[pnum].setbrick(brick);
 		nextbrick = rand() % 7;
@@ -78,29 +76,15 @@ void moveFunc(const short pnum,bool & timetrig) {
 		//player[0].DrawNextBrick(true, nextbrick);
 		gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 		if (controller::getAround(pnum,player[pnum].getnx(), player[pnum].getny(), brick, rot) != EMPTY) break;
-
-		player[pnum].setmtrig(false);
-		while (!player[pnum].getmtrig())
+		while (true)
 		{
-			
 			if (timetrig) {
 				std::unique_lock<std::mutex> l(m[pnum]);
-				if (!ttrig[pnum])
-				{
-					if (controller::moveDown(pnum, brick, player[pnum].getrot())) {
-						ttrig[pnum] = true;
-						l.unlock();
-						break;
-					}
+				if (controller::moveDown(pnum, brick, rot)) {
+					l.unlock();
+					break;
 				}
-				ttrig[pnum] = true;
 				l.unlock();
-				while (!ttrig[0]&&!ttrig[1]&&!ttrig[2]&&!ttrig[3])
-				{
-					;
-				}ttrig[pnum] = false;
-				
-				
 			}
 
 		}
@@ -121,8 +105,7 @@ void controller::operator()(std::queue<int> & q) {
 	player[0].Printscore();
 	std::thread p1(moveFunc,0,std::ref(timetrig));
 	std::thread p2(moveFunc, 1, std::ref(timetrig));
-	std::thread p3(moveFunc, 2, std::ref(timetrig));
-	std::thread p4(moveFunc, 3, std::ref(timetrig));
+	std::thread p3(moveFunc, 2, std::ref(timetrig)); std::thread p4(moveFunc, 3, std::ref(timetrig));
 	while (cnt<4) {
 
 		while (true) {
@@ -209,9 +192,9 @@ bool controller::moveDown(const short pnum,const short brick,const short rot) {
 		return true;
 	}
 	
-		player[pnum].Printbrick(false, brick, rot);
-		player[pnum].ny += 1;
-		player[pnum].Printbrick(true, brick, rot);
+	player[pnum].Printbrick(false, brick, rot);
+	player[pnum].ny += 1;
+	player[pnum].Printbrick(true, brick, rot);
 	return false;
 }
 //bool controller::moveDownAll() {
@@ -240,70 +223,61 @@ bool controller::ProcessKey(const int key) {
 		}
 		break;
 	case RIGHT:
-		if (getAround(0,player[0].nx + 1, player[0].ny, player[0].brick, rot) == EMPTY) {
-			std::unique_lock<std::mutex> l(m[0]);
-			player[0].Printbrick(false, player[0].brick, rot);
-			player[0].Printbricka(false, player[0].brick, rot);
+		if (getAround(0,player[0].nx + 1, player[0].ny, brick, rot) == EMPTY) {
+			player[0].Printbrick(false, brick, rot);
+			player[0].Printbricka(false, brick, rot);
 			player[0].ay = player[0].ny;
 			player[0].nx += 1;
 			player[0].ax += 1;
 			moveDowna(0);
-			player[0].Printbricka(true, player[0].brick, rot);
-			player[0].Printbrick(true, player[0].brick, rot);
-			l.unlock();
+			player[0].Printbricka(true, brick, rot);
+			player[0].Printbrick(true, brick, rot);
+
 
 		}
 
 		break;
 	case UP:
 		trot = (rot == 3 ? 0 : rot + 1);
-		rotnum = getAround(0,player[0].nx, player[0].ny, player[0].brick, trot);
+		rotnum = getAround(0,player[0].nx, player[0].ny, brick, trot);
 		if (rotnum == EMPTY) {
-			std::unique_lock<std::mutex> l(m[0]);
-			player[0].Printbrick(false, player[0].brick, rot);
-			player[0].Printbricka(false, player[0].brick, rot);
+			player[0].Printbrick(false, brick, rot);
+			player[0].Printbricka(false, brick, rot);
 			player[0].ay = player[0].ny;
 			rot = trot;
-			player[0].setrot(rot);
 			moveDowna(0);
-			player[0].Printbricka(true, player[0].brick, rot);
-			player[0].Printbrick(true, player[0].brick, rot);
-			l.unlock();
+			player[0].Printbricka(true, brick, rot);
+			player[0].Printbrick(true, brick, rot);
+
 
 		}
 		else if (rotnum == 3) {
 			rotnum = getAround(0,player[0].nx + 1, player[0].ny, brick, trot);
 			if (rotnum == EMPTY) {
-				std::unique_lock<std::mutex> l(m[0]);
-				player[0].Printbrick(false, player[0].brick, rot);
-				player[0].Printbricka(false, player[0].brick, rot);
+				player[0].Printbrick(false, brick, rot);
+				player[0].Printbricka(false, brick, rot);
 				player[0].ay = player[0].ny;
 				rot = trot;
-				player[0].setrot(rot);
 				player[0].nx++;
 				player[0].ax++;
 				moveDowna(0);
-				player[0].Printbricka(true, player[0].brick, rot);
-				player[0].Printbrick(true, player[0].brick, rot);
-				l.unlock();
+				player[0].Printbricka(true, brick, rot);
+				player[0].Printbrick(true, brick, rot);
 
 			}
 		}
 		else if (rotnum == 4) {
-			rotnum = getAround(0,player[0].nx - 1, player[0].ny, player[0].brick, trot);
+			rotnum = getAround(0,player[0].nx - 1, player[0].ny, brick, trot);
 			if (rotnum == EMPTY) {
-				std::unique_lock<std::mutex> l(m[0]);
-				player[0].Printbrick(false, player[0].brick, rot);
-				player[0].Printbricka(false, player[0].brick, rot);
+				player[0].Printbrick(false, brick, rot);
+				player[0].Printbricka(false, brick, rot);
 				player[0].ay = player[0].ny;
 				rot = trot;
-				player[0].setrot(rot);
 				player[0].nx--;
 				player[0].ax--;
 				moveDowna(0);
-				player[0].Printbricka(true, player[0].brick, rot);
-				player[0].Printbrick(true, player[0].brick, rot);
-				l.unlock();
+				player[0].Printbricka(true, brick, rot);
+				player[0].Printbrick(true, brick, rot);
 
 			}
 		}
@@ -326,16 +300,9 @@ void controller::TestFull(const short pnum,const short brick,const short rot) {
 
 	int x, y, ty;
 	for (int i = 0; i < 4; ++i) {
-		if (pnum == 0) {
-			player[pnum].board[player[pnum].nx  + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].block = BRICK;
-			player[pnum].board[player[pnum].nx  + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].color = brick + 1;
-			
-		}
-		if (pnum > 0) {
-			player[pnum].board[player[pnum].nx - (28 + 22 * (pnum - 1)) + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].block = BRICK;
-			player[pnum].board[player[pnum].nx - (28 + 22 * (pnum - 1)) + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].color = brick + 1;
-			
-		}
+		player[pnum].board[player[pnum].nx-(28 + 22 * pnum) + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].block = BRICK;
+		player[pnum].board[player[pnum].nx-(28 + 22 * pnum) + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].color = brick + 1;
+
 
 	}
 	for (y = 1; y < BH + 1; ++y) {
@@ -357,7 +324,6 @@ void controller::TestFull(const short pnum,const short brick,const short rot) {
 			std::this_thread::sleep_for(50ms);
 		}
 	}
-	player[pnum].mtrig = true;
 }
 
 void Timer::operator()(bool &trig) {

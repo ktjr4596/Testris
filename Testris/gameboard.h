@@ -1,7 +1,7 @@
 #ifndef GAMEBOARD_H
 #define GAMEBOARD_H
 #include <mutex>
-#include <queue>
+
 #define BX 5
 #define BY 5
 #define BW 15
@@ -19,7 +19,7 @@ struct boardinfo
 	short color;
 };
 enum { EMPTY, BRICK, WALL };
-static std::queue<int> q1;
+
 class gameboard {
 private:
 	boardinfo board[BW + 2][BH + 2];
@@ -31,8 +31,6 @@ private:
 	int score;
 	int playerid;
 	short brick;
-	short rot;
-	bool mtrig;
 public:
 	gameboard();
 	//explicit gameboard(int);
@@ -65,11 +63,7 @@ public:
 	void setax(short x) { ax = x; }
 	void setay(short y) { ay = y; }
 	void setbrick(short b) { brick = b; }
-	void setrot(short r) { rot = r; }
-	short getrot() { return rot; }
 	inline int getid() { return id; };
-	bool getmtrig() const { return mtrig; }
-	void setmtrig(bool t) { mtrig = t; }
 	friend class controller;
 };
 
