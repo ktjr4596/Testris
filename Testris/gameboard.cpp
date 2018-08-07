@@ -2,6 +2,7 @@
 #include "gotoxy.h"
 #include "inputclass.h"
 
+
 int gameboard::id = 0;
 const char * tile[] = { " ","□","■" } ;
 
@@ -39,6 +40,9 @@ gameboard::gameboard() {
 		ny = 3;
 		ax = BW / 2;
 		ay = 3;
+		brick = 0;
+		rot = 0;
+		mtrig = false;
 		DrawNextBoard();
 	}
 	else if (id > 1) {
@@ -48,6 +52,9 @@ gameboard::gameboard() {
 		ny = 3;
 		ax = (BW + BX + 8) + (BW + BX + 2)*(id - 2) + (BW / 2);
 		ay = 3;
+		brick = 0;
+		rot = 0;
+		mtrig = false;
 	}
 	score = 0;
 	DrawScreen();
@@ -80,7 +87,9 @@ gameboard::gameboard(gameboard&& rhs) noexcept {
 	ax = rhs.ax;
 	ay = rhs.ay;
 	memcpy(board, rhs.board, sizeof(boardinfo)*((BH + 2)*(BW + 2)));
-
+	brick = 0;
+	rot = 0;
+	mtrig = false;
 	//printf("%d\n", id);
 	DrawScreen();
 }
@@ -95,7 +104,9 @@ gameboard& gameboard::operator=(gameboard && rhs)noexcept {
 	ax = rhs.ax;
 	ay = rhs.ay;
 	memcpy(board, rhs.board, sizeof(boardinfo)*(BH + 2)*(BW + 2));
-	printf("operator=");
+	brick = rhs.brick;
+	rot = rhs.rot;
+	mtrig = rhs.mtrig;
 	return *this;
 }
 void gameboard::DrawScreen() {
@@ -113,7 +124,6 @@ void gameboard::DrawScreen() {
 }
 
 void gameboard::Printbrick(bool show, short brick, short rot) {
-
 	std::unique_lock<std::mutex> l(printm);
 	for (int i = 0; i < 4; ++i) {
 		gtxy::gotoxy(BX + (shape[brick][rot][i].x + nx) * 2, BY + shape[brick][rot][i].y + ny);
