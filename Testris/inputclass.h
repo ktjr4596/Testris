@@ -20,7 +20,7 @@ class gameboard;
 class MoveFunc;
 
 static std::mutex m[4];
-
+static std::mutex sm;
 class inputclass {
 private:
 	int ch;
@@ -29,7 +29,11 @@ public:
 
 };
 
+class Movecontroller {
 
+public:
+	void operator()();
+};
 class controller {
 private:
 	short brick;
@@ -50,7 +54,7 @@ public:
 	static bool moveDown(const short,const short,const short);
 	
 	static void TestFull(const short,const short,const short);
-
+ static bool moveDownAll();
 	static short getAround(const short,const short  x, const short  y, const short  b, const short  r);
 	friend class gameboard;
 	friend class MoveFunc;

@@ -4,7 +4,7 @@
 #include <conio.h>
 #include <iostream>
 #include <time.h>
-
+static bool movecounter = false;
 bool trig[4] = { false,false,false,false };
 bool ttrig[4]= { false,false,false,false };
 short cnt = 0;
@@ -56,7 +56,7 @@ void moveFunc(const short pnum,bool & timetrig) {
 	
 	short brick, nextbrick, rot;
 	nextbrick = rand() % 7; //ttrig[pnum] = false;
-
+	std::unique_lock<std::mutex> l(sm,std::defer_lock);
 	while (true) {
 
 		//printf("%d\n", pnum);
@@ -74,34 +74,40 @@ void moveFunc(const short pnum,bool & timetrig) {
 		//player[pnum].Printbricka(true, brick, rot);
 		//player[pnum].Printbricka(true, brick, rot);
 		//player[pnum].Printbrick(true, brick, rot);
-		player[pnum].Printbrick(true, brick, rot);
+		
 		//player[0].DrawNextBrick(true, nextbrick);
 		gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 		if (controller::getAround(pnum,player[pnum].getnx(), player[pnum].getny(), brick, rot) != EMPTY) break;
-
+		l.lock();
+		player[pnum].Printbrick(true, 0, rot);
+		l.unlock();
 		player[pnum].setmtrig(false);
+		
 		while (!player[pnum].getmtrig())
 		{
 			
-			if (timetrig) {
-				std::unique_lock<std::mutex> l(m[pnum]);
-				if (!ttrig[pnum])
-				{
-					if (controller::moveDown(pnum, brick, player[pnum].getrot())) {
-						ttrig[pnum] = true;
-						l.unlock();
-						break;
-					}
-				}
-				ttrig[pnum] = true;
-				l.unlock();
-				while (!ttrig[0]&&!ttrig[1]&&!ttrig[2]&&!ttrig[3])
-				{
-					;
-				}ttrig[pnum] = false;
-				
-				
-			}
+			//if (timetrig) {
+			//	//std::unique_lock<std::mutex> l(m[pnum]);
+			//	//if (!ttrig[pnum])
+			//	//{
+			//	//	if (controller::moveDown(pnum, brick, player[pnum].getrot())) {
+			//	//		ttrig[pnum] = true;
+			//	//		//l.unlock();
+			//	//		break;
+			//	//	}
+			//	//}
+			//	//
+			//	//ttrig[pnum] = true;
+			//	//l.unlock();
+			//
+			//	while ()
+			//	{
+			//		;
+			//	}
+			//	
+			//	
+			//	
+			//}
 
 		}
 		//player[0].DrawNextBrick(false, nextbrick);
@@ -113,16 +119,19 @@ void controller::operator()(std::queue<int> & q) {
 	Timer t;
 	std::thread timert(t, std::ref(timetrig));
 	player.emplace_back();
-	player.emplace_back();
-	player.emplace_back();
-	player.emplace_back();
+	//player.emplace_back();
+	//player.emplace_back();
+	//player.emplace_back();
 	timert.detach();
-	//nextbrick = rand() % 7;
+	
+
 	player[0].Printscore();
 	std::thread p1(moveFunc,0,std::ref(timetrig));
-	std::thread p2(moveFunc, 1, std::ref(timetrig));
-	std::thread p3(moveFunc, 2, std::ref(timetrig));
-	std::thread p4(moveFunc, 3, std::ref(timetrig));
+	//std::thread p2(moveFunc, 1, std::ref(timetrig));
+	//std::thread p3(moveFunc, 2, std::ref(timetrig));
+	//std::thread p4(moveFunc, 3, std::ref(timetrig));
+
+	
 	while (cnt<4) {
 
 		while (true) {
@@ -134,6 +143,10 @@ void controller::operator()(std::queue<int> & q) {
 				}
 				q.pop();
 			}
+			//if (movecounter) {
+			//	moveDownAll();
+			//	
+			//}
 		}
 		//player[0].nx = BW / 2;
 
@@ -214,12 +227,14 @@ bool controller::moveDown(const short pnum,const short brick,const short rot) {
 		player[pnum].Printbrick(true, brick, rot);
 	return false;
 }
-//bool controller::moveDownAll() {
-//	for (short i = 0; i < 4; ++i) {
-//		moveDown(i);
-//	}
-//	return false;
-//}
+bool controller::moveDownAll() {
+	for (short i = 0; i < 4; ++i) {
+		moveDown(i,player[i].getbrick(),player[i].getrot());
+		ttrig[i] = false;
+	}
+	
+	return false;
+}
 bool controller::ProcessKey(const int key) {
 	short rotnum = 0;
 	switch (key)
@@ -366,14 +381,27 @@ void Timer::operator()(bool &trig) {
 		{
 			start = std::chrono::high_resolution_clock::now();
 			trig = true;
+			movecounter = true;
 		}
 		else {
 			trig = false;
+			movecounter = false;
 		}
 	}
 }
 
+
 void MoveFunc::operator()(gameboard & p) {
 
 	
+}
+
+void Movecontroller::operator()() {
+	while (true)
+	{
+		if (movecounter) {
+			controller::moveDownAll();
+			movecounter = false;
+		}
+	}
 }
