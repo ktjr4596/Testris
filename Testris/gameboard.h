@@ -11,6 +11,14 @@ struct Point
 {
 	short x;
 	short y;
+	
+};
+struct Pointex
+{
+	short x;
+	short y;
+	short state;
+
 };
 extern Point shape[][4][4];
 //static std::shared_mutex sm;
@@ -29,12 +37,14 @@ private:
 	short ny;
 	short ax;
 	short ay;
-	static int id;
+	int id;
 	int score;
-	int playerid;
+	static int playerid;
 	short brick;
 	short rot;
 	bool mtrig;
+	Pointex p[4];
+	Pointex n[4];
 public:
 	gameboard();
 	//explicit gameboard(int);
@@ -53,7 +63,7 @@ public:
 	void DrawNextBrick(bool, short);
 	void Printbricka(bool, short, short);
 	void Printscore();
-	void printnextbrick();
+	void printnextbrick(const short, const short);
 	void setxy(const short);
 	short getnx() const { return nx; };
 	short getax() const { return ax; };
