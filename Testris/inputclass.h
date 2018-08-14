@@ -48,13 +48,13 @@ public:
 	controller();
 	void operator()(std::queue<int>&);
 	controller(controller &&);
-	void moveDowna(const short);
+	static void moveDowna(const short);
 	void addboard();
 	bool ProcessKey(const int);
 	static bool moveDown(const short,const short,const short,const bool);
 	
 	static void TestFull(const short,const short,const short);
- //static bool moveDownAll();
+	static bool moveDownAll();
 	static short getAround(const short,const short  x, const short  y, const short  b, const short  r);
 	friend class gameboard;
 	friend class MoveFunc;

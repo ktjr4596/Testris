@@ -4,22 +4,22 @@
 #include <conio.h>
 
 int gameboard::playerid = 0;
-const char * tile[] = { " ","□","■"," "," " } ;
+const char * tile[] = { " ","□","■"," "," "," "," " } ;
 
 extern Point shape[][4][4] = {
-	{ { 0,0,1,0,2,0,-1,0 },{ 0,0,0,1,0,-1,0,-2 },{ 0,0,1,0,2,0,-1,0 },{ 0,0,0,1,0,-1,0,-2 } },
+	{ { 0,0,1,0,2,0,-1,0 },{ 0,-1,0,0,0,-2,0,-3 },{ 0,0,1,0,2,0,-1,0 },{ 0,-1,0,0,0,-2,0,-3 } },//-
 
-{ { 0,0,1,0,0,1,1,1 },{ 0,0,1,0,0,1,1,1 },{ 0,0,1,0,0,1,1,1 },{ 0,0,1,0,0,1,1,1 } },
+{ { 0,-1,1,-1,0,0,1,0 },{ 0,-1,1,-1,0,0,1,0 },{ 0,-1,1,-1,0,0,1,0 },{ 0,-1,1,-1,0,0,1,0 } },//ㅁ
 
-{ { 0,0,-1,0,0,-1,1,-1 },{ 0,0,0,1,-1,0,-1,-1 },{ 0,0,-1,0,0,-1,1,-1 },{ 0,0,0,1,-1,0,-1,-1 } },
+{ { 0,0,-1,0,0,-1,1,-1 },{ 0,-1,0,0,-1,-1,-1,-2 },{ 0,0,-1,0,0,-1,1,-1 },{ 0,-1,0,0,-1,-1,-1,-2 } },//ㄴㄱ
+//0,0,0,1,-1,0,-1,-1 
+{ { 0,0,-1,-1,0,-1,1,0 },{ 0,-1,-1,-1,-1,0,0,-2 },{ 0,0,-1,-1,0,-1,1,0 },{ 0,-1,-1,-1,-1,0,0,-2 } },//ㄱㄴ
 
-{ { 0,0,-1,-1,0,-1,1,0 },{ 0,0,-1,0,-1,1,0,-1 },{ 0,0,-1,-1,0,-1,1,0 },{ 0,0,-1,0,-1,1,0,-1 } },
+{ { 0,0,-1,0,1,0,-1,-1 },{ 0,-1,0,-2,0,0,-1,0 },{ 0,-1,-1,-1,1,-1,1,0 },{ 0,-1,0,-2,0,0,1,-2 } },//ㄴreverse
 
-{ { 0,0,-1,0,1,0,-1,-1 },{ 0,0,0,-1,0,1,-1,1 },{ 0,0,-1,0,1,0,1,1 },{ 0,0,0,-1,0,1,1,-1 } },
+{ { 0,0,1,0,-1,0,1,-1 },{ 0,-1,0,0,0,-2,-1,-2 },{ 0,-1,1,-1,-1,-1,-1,0 },{ 0,-1,0,-2,0,0,1,0 } },//ㄴ
 
-{ { 0,0,1,0,-1,0,1,-1 },{ 0,0,0,1,0,-1,-1,-1 },{ 0,0,1,0,-1,0,-1,1 },{ 0,0,0,-1,0,1,1,1 } },
-
-{ { 0,1,-1,1,1,1,0,0 },{ 0,0,-1, 0,0,-1,0,1 },{ 0,0,-1,0,1,0,0,1 },{ 0,0,0,-1,0,1,1,0 } },
+{ { 0,0,-1,0,1,0,0,-1 },{ 0,-1,-1, -1,0,-2,0,0 },{ 0,-1,-1,-1,1,-1,0,0 },{ 0,-1,0,-2,0,0,1,-1 } },//ㅗ
 
 };
 
@@ -38,9 +38,9 @@ gameboard::gameboard() {
 	}
 	if (id == 1) {
 		nx = (BX + BW) / 2;
-		ny = 3;
+		ny = 4;
 		ax = BW / 2;
-		ay = 3;
+		ay = 4;
 		brick = 0;
 		rot = 0;
 		mtrig = false;
@@ -50,9 +50,9 @@ gameboard::gameboard() {
 		//((id - 1)*(BW + 2) * 2) + BX + 10 * (id)+x * 2
 		//nx = BW + BX + 8+((BW+BX+2)*(id-1)/2);
 		nx = (BW + BX + 8) + (BW + BX + 2)*(id - 2) + (BW / 2);
-		ny = 3;
+		ny = 4;
 		ax = (BW + BX + 8) + (BW + BX + 2)*(id - 2) + (BW / 2);
-		ay = 3;
+		ay = 4;
 		brick = 0;
 		rot = 0;
 		mtrig = false;
@@ -143,9 +143,9 @@ void gameboard::printnextbrick(const short brick,const short rot)
 	std::unique_lock<std::mutex> l(printm, std::defer_lock);
 	for (int i = 0; i < 4; ++i) {
 		if (id == 1) {
-			l.lock();
+			//l.lock();
 			board[nx + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block += 1;
-			l.unlock();
+			//l.unlock();
 		}//n[i] = { nx + shape[brick][rot][i].x ,ny + shape[brick][rot][i].y  ,board[nx + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block };
 		else if (id > 1) {
 			board[nx - static_cast<short>(28 + 22 * (id - 2)) + shape[brick][rot][i].x][ny +
@@ -286,11 +286,15 @@ void gameboard::Printbrick(bool show, short brick, short rot) {
 	
 }
 void gameboard::Printbricka(bool show, short brick, short rot) {
-
+	std::unique_lock<std::mutex> l(printm,std::defer_lock);
 	for (int i = 0; i < 4; ++i) {
+		l.lock();
+		gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 		gtxy::gotoxy(BX + (shape[brick][rot][i].x + ax) * 2, BY + shape[brick][rot][i].y + ay);
 		puts(tile[show ? WALL : EMPTY]);
+		l.unlock();
 	}
+	
 
 }
 void gameboard::DrawBoard() {
@@ -348,16 +352,16 @@ void gameboard::Printscore()
 void gameboard::setxy(const short id) {
 	if (id == 0) {
 		nx = (BW) / 2;
-		ny = 3;
+		ny = 4;
 		ax = (BW) / 2;
-		ay = 3;
+		ay = 4;
 	}
 	else if (id > 0) {
 		//((id - 1)*(BW + 2) * 2) + BX + 10 * (id)+x * 2
 		//nx = BW + BX + 8+((BW+BX+2)*(id-1)/2);
 		nx = (BW + BX + 8) + (BW + BX + 2)*(id - 1) + (BW / 2);
-		ny = 3;
+		ny = 4;
 		ax = (BW + BX + 8) + (BW + BX + 2)*(id - 1) + (BW / 2);
-		ay = 3;
+		ay = 4;
 	}
 }
