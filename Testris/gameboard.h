@@ -21,7 +21,7 @@ struct Pointex
 
 };
 extern Point shape[][4][4];
-//static std::shared_mutex sm;
+
 static std::mutex printm;
 struct boardinfo
 {
@@ -45,6 +45,7 @@ private:
 	bool mtrig;
 	Pointex p[4];
 	Pointex n[4];
+	
 public:
 	gameboard();
 	//explicit gameboard(int);
