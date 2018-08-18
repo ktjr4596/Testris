@@ -74,17 +74,17 @@ public:
 	short getay () const {
 		return ay;
 	};
-	void setnx(short x) { nx = x; }
-	void setny(short y) { ny = y; }
-	void setax(short x) { ax = x; }
-	void setay(short y) { ay = y; }
-	void setbrick(short b) { brick = b; }
-	void setrot(short r) { rot = r; }
+	void setnx(const short x) { nx = x; }
+	void setny(const short y) { ny = y; }
+	void setax(const short x) { ax = x; }
+	void setay(const short y) { ay = y; }
+	void setbrick(const short b) { brick = b; }
+	void setrot(const short r) { rot = r; }
 	short getrot() { return rot; }
-	inline int getid() { return id; };
+	inline int getid() const { return id; };
 	bool getmtrig() const { return mtrig; }
-	void setmtrig(bool t) { mtrig = t; }
-	short getbrick() { return brick; }
+	void setmtrig(const bool t) { mtrig = t; }
+	short getbrick()const  { return brick; }
 	friend class controller;
 };
 

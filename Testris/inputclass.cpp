@@ -52,6 +52,7 @@ controller::controller() :brick(0), trot(0), rot(0), playernum(0), timetrig(fals
 	//player.reserve(4);
 
 }
+
 controller::controller(controller &&rhs) {
 	brick = std::move(rhs.brick);
 	rot = std::move(rhs.rot);
@@ -59,8 +60,7 @@ controller::controller(controller &&rhs) {
 	playernum = rhs.playernum;
 }
 
-
-void moveFunc(const short pnum,bool & timetrig) {
+void moveFunc(const short pnum) {
 	using namespace std::chrono_literals;
 	short brick, nextbrick, rot;
 	player[pnum].setmtrig(true);
@@ -70,8 +70,6 @@ void moveFunc(const short pnum,bool & timetrig) {
 
 		
 		player[pnum].setxy(pnum);
-		
-		
 		player[pnum].setbrick(nextbrick);
 		player[pnum].setrot(0);
 		
@@ -93,7 +91,7 @@ void moveFunc(const short pnum,bool & timetrig) {
 		while (!ttrig[pnum])
 		{
 			
-
+			std::this_thread::sleep_for(1ms);
 		}
 		if (pnum == 0)
 		{
@@ -101,11 +99,13 @@ void moveFunc(const short pnum,bool & timetrig) {
 			player[pnum].DrawNextBrick(false, nextbrick);
 			
 		}
+		std::this_thread::sleep_for(10ns);
 	}
 	trig[cnt++] = true;
 }
 void controller::operator()(std::queue<int> & q) {
 	srand(time(NULL));
+	using namespace std::chrono_literals;
 	Timer t;
 	std::thread timert(t, std::ref(timetrig));
 	player.emplace_back();
@@ -115,35 +115,32 @@ void controller::operator()(std::queue<int> & q) {
 	timert.detach();
 	
 
-	player[0].Printscore();
-	std::thread p1(moveFunc,0,std::ref(timetrig));
-	std::thread p2(moveFunc, 1, std::ref(timetrig));
-	std::thread p3(moveFunc, 2, std::ref(timetrig));
-	std::thread p4(moveFunc, 3, std::ref(timetrig));
-	std::unique_lock<std::mutex> l(m[0], std::defer_lock);
-
+	//player[0].Printscore();
+	std::thread p1(moveFunc,0);
+	std::thread p2(moveFunc, 1);
+	std::thread p3(moveFunc, 2);
+	std::thread p4(moveFunc, 3);
+	//std::unique_lock<std::mutex> l(m[0], std::defer_lock);
+	Movecontroller mc;
+	std::thread mcthread(mc);
+	mcthread.detach();
 	while (cnt<4) {
-		//while(!player[0].getmtrig()) {
-
-		//}
-		//controller::moveDowna(playernum);
-		//player[playernum].Printbricka(true, player[playernum].getbrick(), player[playernum].getrot());
 		while (true) {
 
-			if (!q.empty()) {
+				if (!q.empty()) {
 
-				if (ProcessKey(q.front()) == true) {
+					if (ProcessKey(q.front()) == true) {
+						q.pop();
+						break;
+					}
 					q.pop();
-					break;
 				}
-				q.pop();
-			}
-			if (movecounter) {
-				moveDownAll();
+				//if (movecounter) 
+				//	moveDownAll();
 				
-			}
-		}
+				std::this_thread::sleep_for(10ns);
 
+		}
 	}
 }
 short controller::getAround(const short pnum,const short  x, const short  y, const short  b, const short  r) {
@@ -174,6 +171,7 @@ void controller::moveDowna(const short  pnum) {
 
 	while (getAround(pnum,player[pnum].ax, player[pnum].ay + 1, player[pnum].brick, player[pnum].rot) >= EMPTY) {
 		player[pnum].ay += 1;
+		
 	}
 }
 bool controller::moveDown(const short pnum,const short brick,const short rot,const bool spacebar) {
@@ -202,9 +200,12 @@ bool controller::moveDown(const short pnum,const short brick,const short rot,con
 }
 bool controller::moveDownAll() {
 	for (short i = 0; i < 4; ++i) {
-		if (moveDown(i, player[i].getbrick(), player[i].getrot(), false))
+		if (!trig[i])
 		{
-			ttrig[i] = true;
+			if (moveDown(i, player[i].getbrick(), player[i].getrot(), false))
+			{
+				ttrig[i] = true;
+			}
 		}
 	
 	}
@@ -216,61 +217,65 @@ bool controller::ProcessKey(const int key) {
 	switch (key)
 	{
 	case LEFT:
-		if (getAround(0,player[0].nx - 1, player[0].ny, player[0].brick, player[0].rot) == EMPTY) {
+		if (getAround(playernum,player[playernum].nx - 1, player[playernum].ny, player[playernum].brick, player[playernum].rot) == EMPTY) {
 			//std::unique_lock<std::mutex> l(m[0]);
 			
-			std::unique_lock<std::mutex> l(m[0]);
-			player[0].Printbricka(false, player[0].brick, player[0].rot);
-			player[0].ay = player[0].ny;
 			
-			player[0].nx -= 1;
-			player[0].ax -= 1;
-			moveDowna(0);
+			player[playernum].Printbricka(false, player[playernum].brick, player[playernum].rot);
+			std::unique_lock<std::mutex> l(m[playernum]);
+			player[playernum].ay = player[playernum].ny;
 			
-			
-			player[0].printnextbrick(player[0].brick, player[0].rot);
-			player[0].Printbricka(true, player[0].brick, player[0].rot);
+			player[playernum].nx -= 1;
+			player[playernum].ax -= 1;
+			moveDowna(playernum);
 			l.unlock();
+			
+			player[playernum].printnextbrick(player[playernum].brick, player[playernum].rot);
+			player[playernum].Printbricka(true, player[playernum].brick, player[playernum].rot);
+			
 		}
 		break;
 	case RIGHT:
-		if (getAround(0,player[0].nx + 1, player[0].ny, player[0].brick, player[0].rot) == EMPTY) {
-			std::unique_lock<std::mutex> l(m[0]);
-			player[0].Printbricka(false, player[0].brick, player[0].rot);
-			player[0].ay = player[0].ny;
-			player[0].nx += 1;
-			player[0].ax += 1;
-			moveDowna(0);
+		if (getAround(playernum,player[playernum].nx + 1, player[playernum].ny, player[playernum].brick, player[playernum].rot) == EMPTY) {
 			
-			//player[0].Printbricka(true, player[0].brick, player[0].rot);
-			player[0].printnextbrick(player[0].brick, player[0].rot);
-			player[0].Printbricka(true, player[0].brick, player[0].rot);
+			player[playernum].Printbricka(false, player[playernum].brick, player[playernum].rot);
+			std::unique_lock<std::mutex> l(m[playernum]);
+			player[playernum].ay = player[playernum].ny;
+			player[playernum].nx += 1;
+			player[playernum].ax += 1;
+			moveDowna(playernum);
 			l.unlock();
+			//player[0].Printbricka(true, player[0].brick, player[0].rot);
+			player[playernum].printnextbrick(player[playernum].brick, player[playernum].rot);
+			player[playernum].Printbricka(true, player[playernum].brick, player[playernum].rot);
+			
 
 		}
 
 		break;
 	case UP:
-		trot = (player[0].rot == 3 ? 0 : player[0].rot + 1);
-		rotnum = getAround(0,player[0].nx, player[0].ny, player[0].brick, trot);
+		trot = (player[playernum].rot == 3 ? 0 : player[playernum].rot + 1);
+		rotnum = getAround(playernum,player[playernum].nx, player[playernum].ny, player[playernum].brick, trot);
 		if (rotnum == EMPTY) {
-		std::unique_lock<std::mutex> l(m[0]);
+		
 			
 		
-		player[0].Printbricka(false, player[0].brick, player[0].rot);
+		player[playernum].Printbricka(false, player[playernum].getbrick(), player[playernum].getrot());
+		std::unique_lock<std::mutex> l(m[playernum]);
 		player[0].ay = player[0].ny;
-	
 		
-		player[0].setrot(trot);
-		
+		player[playernum].setrot(trot);
 		moveDowna(0);
 	
 		//player[0].Printbricka(true, player[0].brick, player[0].rot);
-		player[0].printnextbrick(player[0].brick, player[0].rot);
-		
-		player[0].Printbricka(true, player[0].brick, player[0].rot);
-
+		//player[0].Printbricka(true, player[0].brick, player[0].rot);
 		l.unlock();
+		player[playernum].Printbricka(true, player[playernum].getbrick(), player[playernum].getrot());
+		player[playernum].printnextbrick(player[playernum].getbrick(), player[playernum].getrot());
+		
+		//player[playernum].Printbricka(true, player[playernum].brick, player[playernum].rot);
+
+		
 		}
 
 		
@@ -284,7 +289,7 @@ bool controller::ProcessKey(const int key) {
 
 				//rot = trot;
 				std::unique_lock<std::mutex> l(m[0]);
-				if (player[0].ay - player[0].ny>3)
+				//if (player[0].ay - player[0].ny>3)
 				player[0].Printbricka(false, player[0].brick, player[0].rot);
 				player[0].ay = player[0].ny;
 				player[0].setrot(trot);
@@ -294,7 +299,7 @@ bool controller::ProcessKey(const int key) {
 				//
 				player[0].printnextbrick(player[0].brick, player[0].rot);
 				moveDowna(0);
-				if (player[0].ay - player[0].ny>3)
+				//if (player[0].ay - player[0].ny>3)
 				player[0].Printbricka(true, player[0].brick, rot);
 				l.unlock();
 
@@ -340,36 +345,40 @@ bool controller::ProcessKey(const int key) {
 
 		break;
 	case DOWN:
-		if (moveDown(0,player[0].brick,player[0].rot,false))
+		if (moveDown(0, player[0].brick, player[0].rot, false))
+		{	
+			ttrig[0] = true;
 			return true;
-
+		}
 		break;
 	case SPACE:
-		while (!moveDown(0,player[0].brick,player[0].rot,true)) {}
-		ttrig[0] = true;
-
+		if (!trig[0]) {
+			while (!moveDown(0, player[0].brick, player[0].rot, true)) {}
+			ttrig[0] = true;
+		}
 		return true;
+	case 2:
+		playernum = 1;
+		break;
+
 	}
 	return false;
 }
 
 void controller::TestFull(const short pnum,const short brick,const short rot) {
 	using namespace std::chrono_literals;
-	//std::unique_lock<std::mutex> l(m[pnum], std::defer_lock);
+	std::unique_lock<std::mutex> l(m[pnum], std::defer_lock);
 	int x, y, ty;
 	player[pnum].setmtrig(false);
 	for (int i = 0; i < 4; ++i) {
 		if (pnum == 0) {
 			player[pnum].board[player[pnum].nx  + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].block = BRICK;
 			player[pnum].board[player[pnum].nx  + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].color = brick + 1;
-			
 		}
 		if (pnum > 0) {
 			player[pnum].board[player[pnum].nx - (28 + 22 * (pnum - 1)) + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].block = BRICK;
 			player[pnum].board[player[pnum].nx - (28 + 22 * (pnum - 1)) + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].color = brick + 1;
-			
 		}
-
 	}
 	
 	for (y = 1; y < BH + 1; ++y) {
@@ -382,16 +391,12 @@ void controller::TestFull(const short pnum,const short brick,const short rot) {
 		}
 		
 		if (x == BW + 1) {
-			//if (pnum == 0)
-			//	player[pnum].score++;
-			//for (int i = 0; i < 4; ++i) {
-			//	player[pnum].board[player[pnum].nx + shape[brick][rot][i].x][player[pnum].ny + shape[brick][rot][i].y].block = EMPTY;
-			//}
+
 			for (ty = y; ty > 1; --ty) {
 				for (x = 1; x < BW + 1; ++x) {
-					//l.lock();
+					l.lock();
 					player[pnum].board[x][ty] = player[pnum].board[x][ty - 1];
-					//l.unlock();
+					l.unlock();
 				}
 			}
 			player[pnum].DrawBoard();
@@ -400,22 +405,24 @@ void controller::TestFull(const short pnum,const short brick,const short rot) {
 			std::this_thread::sleep_for(50ms);
 		}
 	}
-	//player[pnum].setxy(pnum);
 	
 }
 
 void Timer::operator()(bool &trig) {
+	using namespace std::chrono_literals;
 	while (true) {
-		if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count() > 2)
+		if (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count() > 0.7)
 		{
 			start = std::chrono::high_resolution_clock::now();
-			trig = true;
 			movecounter = true;
+			std::this_thread::sleep_for(10ns);
+
 		}
 		else {
-			trig = false;
+			
 			movecounter = false;
 		}
+		std::this_thread::sleep_for(10ns);
 	}
 }
 
@@ -425,12 +432,14 @@ void MoveFunc::operator()(gameboard & p) {
 	
 }
 
-//void Movecontroller::operator()() {
-//	while (true)
-//	{
-//		if (movecounter) {
-//			controller::moveDownAll();
-//			movecounter = false;
-//		}
-//	}
-//}
+void Movecontroller::operator()() {
+	using namespace std::chrono_literals;
+	while (true)
+	{
+		if (movecounter) {
+			controller::moveDownAll();
+			movecounter = false;
+		}
+		std::this_thread::sleep_for(10ns);
+	}
+}

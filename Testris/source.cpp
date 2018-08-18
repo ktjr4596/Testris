@@ -9,7 +9,6 @@
 void mainmenu();
 int main()
 {
-	//system("clear");
 	gtxy::SetCursor(false);
 	system("mode con: lines=50 cols=200");
 	mainmenu();
@@ -18,13 +17,7 @@ int main()
 	if (!ic(commandq))
 		return 0;
 	ic.setflag(true);
-	gtxy::gotoxy(70, 25);
-	puts("                                                                ");
-	gtxy::gotoxy(80, 30);
-	puts("                                                                ");
-	
-
-
+	system("cls");
 	
 	
 	std::thread inputthread(ic, std::ref(commandq));
