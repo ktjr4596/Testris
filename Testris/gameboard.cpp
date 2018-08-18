@@ -230,10 +230,7 @@ void gameboard::printnextbrick(const short brick,const short rot)
 }
 void gameboard::Printbrick(bool show, short brick, short rot) {
 	
-	//std::shared_lock<std::shared_mutex> l(sm);
-	//std::lock_guard<std::mutex> l(printm);
-	//l.lock_sha
-	//sm.lock_shared();
+
 	std::unique_lock<std::mutex> l(printm, std::defer_lock);
 	if (show) {
 		for (int i = 0; i < 4; ++i) {
@@ -287,13 +284,53 @@ void gameboard::Printbrick(bool show, short brick, short rot) {
 }
 void gameboard::Printbricka(bool show, short brick, short rot) {
 	std::unique_lock<std::mutex> l(printm,std::defer_lock);
-	for (int i = 0; i < 4; ++i) {
-		l.lock();
-		gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
-		gtxy::gotoxy(BX + (shape[brick][rot][i].x + ax) * 2, BY + shape[brick][rot][i].y + ay);
-		puts(tile[show ? WALL : EMPTY]);
-		l.unlock();
+	l.lock();
+	short cntflag = 0;
+	if (show) {
+		for (int i = 0; i < 4; ++i) {
+			for (int j = 0; j < 4; ++j) {
+				if (((shape[brick][rot][i].x + ax) == (shape[brick][rot][i].x + nx)) && ((shape[brick][rot][i].y + ay) == (shape[brick][rot][i].x + ny)))
+				{
+					cntflag++;
+					break;
+				}
+
+			}
+			if (cntflag == 0)
+			{
+				gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
+				gtxy::gotoxy(BX + (shape[brick][rot][i].x + ax) * 2, BY + shape[brick][rot][i].y + ay);
+				puts(tile[show ? WALL : EMPTY]);
+			}
+		}
 	}
+	else {
+		for (int i = 0; i < 4; ++i) {
+			for (int j = 0; j < 4; ++j) {
+				if (((shape[brick][rot][i].x + ax) == (shape[brick][rot + 1][i].x + nx)) && ((shape[brick][rot ][i].y + ay) == (shape[brick][rot+1][i].x + ny)))
+				{
+					cntflag++;
+					break;
+				}
+
+			}
+			//for (int j = 0; j < 4; ++j) {
+			//	if ((shape[brick][rot ][i].x + ax) == p[j].x && (shape[brick][rot ][i].y + ay) == p[j].y)
+			//	{
+			//		cntflag++;
+			//		break;
+			//	}
+
+			//}
+			if (cntflag == 0)
+			{
+				gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
+				gtxy::gotoxy(BX + (shape[brick][rot][i].x + ax) * 2, BY + shape[brick][rot][i].y + ay);
+				puts(tile[show ? WALL : EMPTY]);
+			}
+		}
+	}
+	l.unlock();
 	
 
 }
@@ -331,11 +368,16 @@ void gameboard::DrawNextBoard() {
 }
 
 void gameboard::DrawNextBrick(bool show, short brick) {
+	std::unique_lock<std::mutex> l(printm, std::defer_lock);
+	l.lock();
 	for (int i = 0; i < 4; ++i) {
+		
 		gtxy::gotoxy((shape[brick][0][i].x + BX + BW + 3) * 2, BY + shape[brick][0][i].y + 4);
 		gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 		puts(tile[show ? BRICK : EMPTY]);
+		
 	}
+	l.unlock();
 }
 
 void gameboard::Printscore()

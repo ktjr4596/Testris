@@ -23,9 +23,12 @@ static std::mutex m[4];
 //static std::mutex sm;
 class inputclass {
 private:
+	static bool startflag;
 	int ch;
 public:
-	void operator()(std::queue<int>&);
+	inline bool getflag() { return startflag; }
+	inline void setflag(const bool f) { startflag = f; }
+	bool operator()(std::queue<int>&);
 
 };
 
