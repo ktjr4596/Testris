@@ -21,7 +21,6 @@ struct Pointex
 
 };
 extern Point shape[][4][4];
-
 static std::mutex printm;
 struct boardinfo
 {
@@ -85,6 +84,8 @@ public:
 	bool getmtrig() const { return mtrig; }
 	void setmtrig(const bool t) { mtrig = t; }
 	short getbrick()const  { return brick; }
+	int getscore() const { return score; };
+	void plusscore() { score += 1; }
 	friend class controller;
 };
 

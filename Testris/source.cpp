@@ -41,7 +41,7 @@ int main()
 
 			std::thread ctrlthread(std::move(ctrl), std::ref(commandq));
 			thread_guard g1(ctrlthread);
-			//inputthread.join();
+	
 			
 		}
 
@@ -52,9 +52,7 @@ int main()
 		while (!commandq.empty()) {
 			commandq.pop();
 		}
-		/*if (!ic(commandq))
-			continue;
-		*///ic.setflag(true);
+
 	}
 }
 

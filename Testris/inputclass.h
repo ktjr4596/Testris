@@ -20,7 +20,7 @@ class gameboard;
 class MoveFunc;
 
 static std::mutex m[4];
-//static std::mutex sm;
+
 class inputclass {
 private:
 	static bool startflag;
@@ -44,7 +44,6 @@ private:
 	short trot = 0;
 	short rot;
 	short playernum;
-	//std::vector<gameboard> player;
 	bool timetrig = false;
 
 public:

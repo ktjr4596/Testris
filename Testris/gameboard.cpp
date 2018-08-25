@@ -37,9 +37,9 @@ gameboard::gameboard() {
 
 	}
 	if (id == 1) {
-		nx = (BX + BW) / 2;
+		nx = (BX + BW) / 2+1;
 		ny = 4;
-		ax = BW / 2;
+		ax = BW / 2+1;
 		ay = 4;
 		brick = 0;
 		rot = 0;
@@ -95,7 +95,7 @@ gameboard::gameboard(gameboard&& rhs) noexcept {
 	brick = 0;
 	rot = 0;
 	mtrig = false;
-	
+	score = rhs.score;
 	//printf("%d\n", id);
 	DrawScreen();
 }
@@ -112,6 +112,7 @@ gameboard& gameboard::operator=(gameboard && rhs)noexcept {
 	memcpy(board, rhs.board, sizeof(boardinfo)*(BH + 2)*(BW + 2));
 	brick = rhs.brick;
 	rot = rhs.rot;
+	score = rhs.score;
 	mtrig = rhs.mtrig;
 	return *this;
 }
@@ -140,7 +141,7 @@ void gameboard::printnextbrick(const short brick,const short rot)
 
 	int j = 1;
 	short tnx = 0;
-	std::unique_lock<std::mutex> l(printm, std::defer_lock);
+	
 	for (int i = 0; i < 4; ++i) {
 		if (id == 1) {
 			board[nx + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block += 1;
@@ -153,12 +154,12 @@ void gameboard::printnextbrick(const short brick,const short rot)
 	for (int i = 0; i < 4; ++i) {
 		if (id == 1) {
 			if (p[i].state == board[p[i].x][p[i].y].block) {
-				l.lock();
+				std::lock_guard<std::mutex> l(printm);
 				board[p[i].x][p[i].y].block = EMPTY;
 				
 				gtxy::gotoxy(BX + (p[i].x) * 2, BY + p[i].y);
 				puts(tile[0]);
-				l.unlock();
+				//l.unlock();
 			}
 			else {
 				p[i].state = board[p[i].x][p[i].y].block;
@@ -168,11 +169,11 @@ void gameboard::printnextbrick(const short brick,const short rot)
 		else if (id > 1) {
 			if (p[i].state == board[p[i].x][p[i].y].block) {
 				board[p[i].x][p[i].y].block = EMPTY;
-				l.lock();
+				std::lock_guard<std::mutex> l(printm);
 				gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 				gtxy::gotoxy(BX + ((p[i].x) + static_cast<short>(28 + 22 * (id - 2))) * 2, BY + p[i].y);
 				puts(tile[0]);
-				l.unlock();
+				
 			}
 			else {
 				p[i].state = board[p[i].x][p[i].y].block;
@@ -209,19 +210,19 @@ void gameboard::printnextbrick(const short brick,const short rot)
 		}
 		if (id == 1) {
 			p[cnt + j - 1] = { nx + shape[brick][rot][i].x ,ny + shape[brick][rot][i].y ,board[nx + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block };
-			l.lock();
+			std::lock_guard<std::mutex> l(printm);
 			gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 			gtxy::gotoxy(BX + (p[cnt + j - 1].x) * 2, BY + p[cnt + j - 1].y);
 			puts(tile[1]);
-			l.unlock();
+			
 		}
 		else if (id > 1) {
 			p[cnt + j - 1] = { nx - static_cast<short>(28 + 22 * (id - 2)) + shape[brick][rot][i].x ,ny + shape[brick][rot][i].y ,board[nx - static_cast<short>(28 + 22 * (id - 2)) + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block };
-			l.lock();
+			std::lock_guard<std::mutex> l(printm);
 			gtxy::ClearConsoleToColors(brick + 1, gtxy::Black);
 			gtxy::gotoxy(BX + ((p[cnt + j - 1].x) + static_cast<short>(28 + 22 * (id - 2))) * 2, BY + p[cnt + j - 1].y);
 			puts(tile[1]);
-			l.unlock();
+			
 		}
 		j++;
 	}
@@ -234,6 +235,7 @@ void gameboard::Printbrick(bool show, short brick, short rot) {
 		for (int i = 0; i < 4; ++i) {
 
 			if (id == 1) {
+				//std::lock_guard<std::mutex> l(m[id]);
 				board[nx + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block += 1;
 				p[i] = { nx + shape[brick][rot][i].x ,ny + shape[brick][rot][i].y ,board[nx + shape[brick][rot][i].x][ny + shape[brick][rot][i].y].block };
 			}
@@ -394,9 +396,9 @@ void gameboard::Printscore()
 
 void gameboard::setxy(const short id) {
 	if (id == 0) {
-		nx = (BW) / 2;
+		nx = (BW) / 2+1;
 		ny = 4;
-		ax = (BW) / 2;
+		ax = (BW) / 2+1;
 		ay = 4;
 	}
 	else if (id > 0) {
