@@ -20,6 +20,7 @@ struct Pointex
 	short state;
 
 };
+extern std::mutex m[4];
 extern Point shape[][4][4];
 static std::mutex printm;
 struct boardinfo

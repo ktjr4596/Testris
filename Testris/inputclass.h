@@ -19,7 +19,7 @@ class controller;
 class gameboard;
 class MoveFunc;
 
-static std::mutex m[4];
+
 
 class inputclass {
 private:
