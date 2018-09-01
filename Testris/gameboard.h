@@ -11,7 +11,7 @@ struct Point
 {
 	short x;
 	short y;
-	
+
 };
 struct Pointex
 {
@@ -28,7 +28,7 @@ struct boardinfo
 	short block;
 	short color;
 };
-enum {INIT,BRICK, WALL, EMPTY, TEMP, TEMPNEXT};
+enum { INIT, BRICK, WALL, EMPTY, TEMP, TEMPNEXT };
 static std::queue<int> q1;
 class gameboard {
 private:
@@ -45,7 +45,7 @@ private:
 	bool mtrig;
 	Pointex p[4];
 	Pointex n[4];
-	
+
 public:
 	gameboard();
 	//explicit gameboard(int);
@@ -62,16 +62,16 @@ public:
 	void DrawBoard();
 	void DrawNextBoard();
 	void DrawNextBrick(bool, short);
-	void Printbricka(bool, short, short);
+	void Printbricka(bool, short, short, bool);
 	void Printscore();
 	void printnextbrick(const short, const short);
 	void setxy(const short);
 	short getnx() const { return nx; };
 	short getax() const { return ax; };
-	short getny ()const {
+	short getny()const {
 		return ny;
 	};
-	short getay () const {
+	short getay() const {
 		return ay;
 	};
 	void setnx(const short x) { nx = x; }
@@ -84,7 +84,7 @@ public:
 	inline int getid() const { return id; };
 	bool getmtrig() const { return mtrig; }
 	void setmtrig(const bool t) { mtrig = t; }
-	short getbrick()const  { return brick; }
+	short getbrick()const { return brick; }
 	int getscore() const { return score; };
 	void plusscore() { score += 1; }
 	friend class controller;
