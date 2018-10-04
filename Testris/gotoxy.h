@@ -4,7 +4,7 @@
 
 
 namespace gtxy {
-	enum {
+	enum { // 컬러명 enum
 		Black,
 		Blue,
 		Green,
@@ -24,8 +24,8 @@ namespace gtxy {
 
 
 	};
-	void ClearConsoleToColors(int ForgC, int BackC);
+	void ClearConsoleToColors(int ForgC, int BackC); // 콘솔의 색상 변경
 	void gotoxy(short x, short y);
-	void SetCursor(bool bVisible);
+	void SetCursor(bool bVisible); 
 }
 #endif // !GOTOXY_H#pragma once
